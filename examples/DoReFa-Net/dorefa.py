@@ -14,9 +14,11 @@ def get_dorefa(bitW, bitA, bitG):
     G = tf.get_default_graph()
 
     def quantize(x, k):
-        n = float(2**k-1)
+        clip_x = tf.clip_by_value(x, 0, float((2**(k-1)-1))/float(2**(k-1)))
+        n = float(2**(k-1))
         with G.gradient_override_map({"Floor": "Identity"}):
-            return tf.round(x * n) / n
+            #return tf.round(clip_x * n) / n
+            return tf.floor(clip_x * n) / n
 
     def fw(x):
         if bitW == 32:
