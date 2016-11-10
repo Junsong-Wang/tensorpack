@@ -9,11 +9,15 @@ FIX_POINT_MAX = 2 ** (DW - 1) - 1
 FIX_POINT_MIN = - 2 ** (DW - 1)
 UINT8_MAX = 2 ** 8
 
-def mat_dump_hex(file_path_name, mat):
+def mat_dump_hex(file_path_name, mat, pad=False):
     blob_data = mat[0]
-    print blob_data.shape
     blob_data = blob_data.transpose(1, 0, 2)
-    blob_data_shaped = blob_data.reshape(-1)
+    if pad:
+        blob_data_pad = np.zeros((blob_data.shape[0], blob_data.shape[1], 4))
+        blob_data_pad[:,:,0:3] = blob_data
+        blob_data_shaped = blob_data_pad.reshape(-1)
+    else:
+        blob_data_shaped = blob_data.reshape(-1)
     if len(blob_data_shaped) % 64:
         blob_data_shaped = np.append(blob_data_shaped, \
                     np.zeros(64 - len(blob_data_shaped) % 64, dtype=int))
@@ -58,8 +62,17 @@ def mat_dump_float(file_path_name, mat):
     fd.write(data_str)
     fd.close()
 
-def mat_dump_int(file_path_name, mat):
-    mat = np.round(mat[0].transpose(1, 0, 2).reshape(-1))
+def mat_dump_int(file_path_name, mat, pad=False):
+    blob_data = mat[0]
+    blob_data = blob_data.transpose(1, 0, 2)
+    if pad:
+        blob_data_pad = np.zeros((blob_data.shape[0], blob_data.shape[1], 4))
+        blob_data_pad[:,:,0:3] = blob_data
+        blob_data_shaped = blob_data_pad.reshape(-1)
+    else:
+        blob_data_shaped = blob_data.reshape(-1)
+
+    mat = blob_data_shaped
     mat[np.where(mat > FIX_POINT_MAX)] = FIX_POINT_MAX
     mat[np.where(mat < FIX_POINT_MIN)] = FIX_POINT_MIN
     #saturate processing

@@ -21,6 +21,12 @@ def compare(file1, file2):
     data2 = read_data(file2) 
 
     diff  = data1 - data2
+    print data1
+    print data2
+    #diff = np.divide(data2, data1)
+    #print data1[2911], data2[2911]
+    print diff
+    #print np.max(diff), np.min(diff)
  
     unequal_num = len(np.where(diff != 0)[0])
     print unequal_num, float(unequal_num) / float(len(data1))

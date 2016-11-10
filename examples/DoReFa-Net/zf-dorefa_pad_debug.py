@@ -297,7 +297,7 @@ def run_image(model, sess_init, inputs):
         session_init=sess_init,
         session_config=get_default_sess_config(0.9),
         input_var_names=['input'],
-        output_var_names=['output', 'conv0/output:0', 'bn0/bn/add_1:0', 'div_1:0', 'pool0/MaxPool:0', 'conv1/output:0', 'bn1/bn/add_1:0', 'div_2:0', 'pool1/MaxPool:0', 'div_3:0', 'div_4:0', 'div_5:0', 'pool4/MaxPool', 'fc0/output:0', 'bnfc0/bn/add_1:0', 'div_6:0', 'div_7:0', 'fct/output:0']
+        output_var_names=['output', "fc0/StopGradient:0"]
     )
     predict_func = get_predict_func(pred_config)
     meta = dataset.ILSVRCMeta()
@@ -327,16 +327,12 @@ def run_image(model, sess_init, inputs):
         #data.mat_dump_hex('./input_sim.dat', img-128)
         img = transformers.augment(img)[np.newaxis, :,:,:]
         img = np.round(img)
-        data.mat_dump_hex('./dump/input_sim.dat', img, True)
-        data.mat_dump_int('./dump/input.dat', img, True)
         outputs = predict_func([img])
-        inter_layers = ['conv0', 'bn0', 'active0', 'pool0', 'conv1', 'bn1', 'active1', 'pool1', 'conv2', 'conv3', 'conv4', 'pool4', 'fc0', 'fc0bn', 'fc0active', 'fc1', 'fct']
 
-        #print outputs[1]
-        for i, name in enumerate(inter_layers):
-            data.mat_dump_float('dump/' + name + '.dat', outputs[i+1])
         prob = outputs[0][0]
         ret = prob.argsort()[-10:][::-1]
+
+        print outputs[1]
 
         names = [words[i] for i in ret]
         print(f + ":")
