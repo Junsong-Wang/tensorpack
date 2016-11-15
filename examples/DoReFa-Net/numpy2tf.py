@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import pickle
 
 def compute_mean(data):
     numpy_mean = np.mean(np.abs(data))
@@ -19,8 +20,12 @@ if __name__ == '__main__':
 
     weights_name = ['conv0/W:0', 'conv1/W:0', 'conv2/W:0', 'conv3/W:0', 'conv4/W:0', 'fc0/W:0', 'fc1/W:0', 'fct/W:0']
 
+    compensation_factor = {}
     for layer in weights_name:
         data = param_dict[layer]
         numpy_mean, tf_mean = compute_mean(data)
+        compensation_factor[layer] = numpy_mean/tf_mean
         print 'Layer:{}\tnumpy:{}\ttensflow:{}\tratio:{}'\
                .format(layer, numpy_mean, tf_mean, numpy_mean/tf_mean)
+    with open('compensation.pkl', 'wb') as f:
+        pickle.dump(compensation_factor, f)

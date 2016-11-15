@@ -39,8 +39,8 @@ def bn_init(bn, E, auto_q=False, scale_q=BN_SCALE_Q, bias_q=BN_BIAS_Q):
     if auto_q is True:
         scale_q = int(math.floor(math.log(1.0/np.max(np.abs(bn_scale))) / math.log(2.0))) + 15
         bias_q = int(math.floor(math.log(1.0/np.max(np.abs(bn_bias))) / math.log(2.0))) + 15
-    print 'SCALE_Q:{}, BIAS_Q:{}, SCALE_MAX:{}, BIAS:{}'\
-        .format(scale_q, bias_q, np.max(np.abs(bn_scale)), np.max(np.abs(bn_bias)))
+    print 'SCALE_Q:{}, BIAS_Q:{}, E:{}, SCALE_MAX:{}, BIAS:{}'\
+        .format(scale_q, bias_q, E, np.max(np.abs(bn_scale)), np.max(np.abs(bn_bias)))
        
     bn_scale_fix = bn_scale * (2 ** scale_q)
     bn_scale_fix[np.where(bn_scale_fix > BN_FIX_POINT_MAX)] = BN_FIX_POINT_MAX
@@ -94,12 +94,12 @@ def conv(input_data, weights, output_shape, stride, pad, bn, idq, odq):
                                   'weight:(', conv_width, conv_height, conv_channel, ') ', weight_display, \
                                   'conv_sum:', conv_sum
                             """
-                """
+                     
                 print 'Position:', width, height, kernel, \
-                      'real_conv:', conv_sum/float(2**idq) * E, 'real_bn:', conv_sum_real, 'real_active:', active(conv_sum_real), \
+                      'real_conv:', conv_sum/float(2**idq) * E, 'real_bn:', conv_bn_real, 'real_active:', active_real, \
                       'sim_conv:', conv_sum, 'bn_param', bn_scale_fix[kernel], bn_bias_fix[kernel], \
-                      'sim_bn0:', conv_sum_biased, 'sim_active:', active_sim
-                """
+                      'sim_bn0:', conv_bn_fix, 'sim_active:', active_fix
+                
                 output_data[width, height, kernel] = active_real
                 output_data_fix[width, height, kernel] = active_fix
     return output_data, output_data_fix
@@ -125,17 +125,13 @@ def pool(input_data, output_shape, kernel_size, stride, pad):
     return output_data
 
 def fc(input_data, weights, bn, idq, odq, isactive=True):
-    print input_data.shape, weights.shape
-    print bn[0].shape
     kernel_num = weights.shape[0]
     if input_data.ndim == 3:
-        #input_data = input_data.transpose(1,0,2)
         width, height, channel = input_data.shape
         weights = weights.reshape(kernel_num, height, width, channel).transpose(0, 2, 1, 3).reshape(kernel_num, -1)
     input_data = input_data.reshape(-1)
 
     E, weights = binarize_weights(weights)
-    print E
     if bn:
         bn_scale, bn_bias, bn_scale_fix, bn_bias_fix, scale_q, bias_q= bn_init(bn, E, True)
 
