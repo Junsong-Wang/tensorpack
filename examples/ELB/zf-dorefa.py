@@ -82,7 +82,7 @@ class Model(ModelDesc):
         def new_get_variable(name, shape=None, **kwargs):
             v = old_get_variable(name, shape, **kwargs)
             # don't binarize first and last layer
-            print '--------------------------------', name, v.op.name
+            # print '--------------------------------', name, v.op.name
             """
             if name != 'W':
                 return v
@@ -93,13 +93,13 @@ class Model(ModelDesc):
             """
             if name == 'W' and ('conv0' in v.op.name):
                 logger.info("Binarizing-8 weight {}".format(v.op.name))
-                return fw1(v)
+                return fw8(v)
             elif name == 'W' and ('fct' in v.op.name):
                 logger.info("Binarizing-4 weight {}".format(v.op.name))
-                return fw1(v)
+                return fw4(v)
             elif name == 'W' and ('conv1' in v.op.name or 'conv2' in v.op.name or 'conv3' in v.op.name or 'conv4' in v.op.name):
                 logger.info("Binarizing-2 weight {}".format(v.op.name))
-                return fw1(v)
+                return fw2(v)
             elif name == 'W' and ('fc0' in v.op.name or 'fc1' in v.op.name):
                 logger.info("Binarizing-1 weight {}".format(v.op.name))
                 return fw1(v)
@@ -263,7 +263,7 @@ def get_config():
         ]),
         model=Model(),
         step_per_epoch=5000,
-        max_epoch=100,
+        max_epoch=200,
     )
 
 def run_image(model, sess_init, inputs):
