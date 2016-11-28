@@ -30,7 +30,7 @@ def get_dorefa(bitW, bitA, bitG):
         #clip_x = tf.clip_by_value(x, -E, E)
         #with G.gradient_override_map({"Floor": "Identity"}):
         #    return (tf.round(clip_x/E + 1) - 1)* E
-        with G.gradient_override_map({"Floor": "Identity"}):
+        with G.gradient_override_map({"Sign": "Identity"}):
             return 0.5 * E * (tf.sign(x / E - 0.7) + tf.sign(x / E + 0.7))
 
     def fw4(x):
