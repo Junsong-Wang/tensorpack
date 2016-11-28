@@ -27,9 +27,11 @@ def get_dorefa(bitW, bitA, bitG):
 
     def fw2(x):
         E = tf.stop_gradient(tf.reduce_mean(tf.abs(x)))
-        clip_x = tf.clip_by_value(x, -E, E)
+        #clip_x = tf.clip_by_value(x, -E, E)
+        #with G.gradient_override_map({"Floor": "Identity"}):
+        #    return (tf.round(clip_x/E + 1) - 1)* E
         with G.gradient_override_map({"Floor": "Identity"}):
-            return (tf.round(clip_x/E + 1) - 1)* E
+            return 0.5 * E * (tf.sign(x / E - 0.7) + tf.sign(x / E + 0.7))
 
     def fw4(x):
         x = tf.tanh(x)
